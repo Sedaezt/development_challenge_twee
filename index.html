@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hand Detection Game</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.min.js"></script>
+  <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js" type="text/javascript"></script>
+</head>
+<body>
+  <script>
+
+    let handpose; //ml5.js opslaan
+    let video;  // webcam
+    let predictions = []; //voorspellingen handpost
+    let circles = []; // Array om cirkels bij te houden
+    let circleSpeed = 0.1; // snelheid cirkels
+
+    function setup() {
+      createCanvas(640, 480);
+      video = createCapture(VIDEO); //webcam
+      video.hide();    //video verbergen
+      handpose = ml5.handpose(video, modelReady); // roep modelready als de functie klaar is
+      handpose.on('predict', gotHands);  
+    }
+
+    function modelReady() {
+      console.log("Model ready!");  // weten wnr model ready is 
+    }
+
+    function gotHands(results) {
+      predictions = results;  
+    }
+
+    function draw() {
+      image(video, 0, 0, width, height);  //hoogte/breedte
+      drawCircles();  //tekent
+      moveCircles();  //verplaatsen
+      removeCirclesOnHand();  //verwijderen
+    }
+
+    function drawCircles() {
+      fill(255, 0, 0);  
+      noStroke();
+      if (circles.length < 5 && frameCount % 60 == 0) { //cirkels minder dan 5 en 1x per seconde een nieuw cirkel tekenen
+        // willekeurig
+        let circleX = random(width);  
+        let circleY = random(height);
+        circle(circleX, circleY, 50); // tekent cirkel op canvas met een diameter van 50px
+        circles.push({ x: circleX, y: circleY }); // Voeg cirkel toe aan array
+      }
+    }
+
+    function moveCircles() {    // verplaatsen van cirkels
+      for (let i = 0; i < circles.length; i++) {
+        circles[i].x += circleSpeed;  //nieuwe positie op het scherm
+        circles[i].y += circleSpeed;
+        circle(circles[i].x, circles[i].y, 50);
+      }
+    }
+
+    function removeCirclesOnHand() {
+      for (let i = 0; i < predictions.length; i++) {
+        let landmarks = predictions[i].landmarks;
+        let tipIndex = 8; // wijsvinger
+        let tip = landmarks[tipIndex];
+        let tipX = tip[0];
+        let tipY = tip[1];
+        for (let j = circles.length - 1; j >= 0; j--) { 
+          let d = dist(tipX, tipY, circles[j].x, circles[j].y);
+          if (d < 25) { // Als de wijsvinger dichtbij de cirkel is
+            // Verwijder de cirkel
+            circles.splice(j, 1);
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>
