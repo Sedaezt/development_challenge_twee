@@ -50,7 +50,11 @@ function draw() {
     textSize(32);
     textAlign(CENTER, CENTER);
     if (gameEnded) {
-      text("Game Over", width / 2, height / 2);
+      if (numRemovedCircles >= 5) { // meer dan 5 cirkels verwijdert
+        text("You won!", width / 2, height / 2);
+      } else {
+        text("Game Over", width / 2, height / 2);
+      }
     } else {
       text("Please show your hand to start", width / 2, height / 2);
     }
@@ -63,8 +67,8 @@ function drawCircles() {
   noStroke();
   while (circles.length < 5) { // Voeg cirkels toe totdat we er 5 hebben
     let circleX = random(width);
-    let circleY = random(height);
-    let speed = random(0.5, 2); // Willekeurige snelheid
+    let circleY = random(-100, -50); // Start van boven
+    let speed = random(1, 3); // Willekeurige snelheid
     circle(circleX, circleY, 50);
     circles.push({ x: circleX, y: circleY }); // Voeg cirkel toe
     circleSpeeds.push(speed); // Voeg snelheid toe
@@ -74,9 +78,11 @@ function drawCircles() {
 // bewegen cirkels
 function moveCircles() {
   for (let i = 0; i < circles.length; i++) {
-    circles[i].x += random(-1, 1) * circleSpeeds[i];  //horizontaal op het scherm
-    circles[i].y += random(-1, 1) * circleSpeeds[i];  // verticaal op het scherm
-    circle(circles[i].x, circles[i].y, 50); // opnieuw tekenen
+    circles[i].y += circleSpeeds[i]; // Verhoog y-positie
+    circle(circles[i].x, circles[i].y, 50);
+    if (circles[i].y > height + 50) { // Als cirkel onderaan is, opnieuw beginnen
+      circles[i].y = random(-100, -50);
+    }
   }
 }
 
@@ -89,16 +95,13 @@ function removeCirclesOnHand() {
     let tipY = tip[1];
     for (let j = circles.length - 1; j >= 0; j--) { 
       let d = dist(tipX, tipY, circles[j].x, circles[j].y);
-      if (d < 25) { // Als de wijsvinger dichtbij de cirkel is
-        // Verwijder de cirkel
+      if (d < 25) {// Als de wijsvinger dichtbij de cirkel is
+        // Verwijder de cirkel en bijbehorende snelheid
         circles.splice(j, 1);
         circleSpeeds.splice(j, 1);
         numRemovedCircles++;
       }
     }
-  }
-  if (numRemovedCircles >= 3) {
-    youWon();
   }
 }
 
@@ -107,7 +110,7 @@ function displayTime(time) {
   fill(255);
   textSize(20);
   textAlign(LEFT, TOP);
-  text("Time: " + nf(maxTime - time, 0, 1), 10, 10); 
+  text("Time: " + nf(maxTime - time, 0, 1), 10, 10); // Toon de resterende tijd
 }
 
 // score laten zien 
@@ -115,7 +118,7 @@ function displayScore() {
   fill(255);
   textSize(20);
   textAlign(RIGHT, TOP);
-  text("Score: " + numRemovedCircles, width - 10, 10); 
+  text("Score: " + numRemovedCircles, width - 10, 10); // Toon het aantal verwijderde cirkels
 }
 
 // game over scherm
