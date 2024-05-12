@@ -40,7 +40,7 @@ function modelReady() {
       if (handDetected && !gameEnded) { //handdetectie + spel niet geëindigd
         let elapsedTime = (millis() - startTime) / 1000;  //omzetten naar sec.
         // gameover als de tijd 0 is
-        if (numRemovedBubbles >= 5) {
+        if (numRemovedBubbles >= 10) {
           youWon();
         } else if (elapsedTime >= maxTime) {
           gameOver();
@@ -59,7 +59,7 @@ function modelReady() {
   textSize(32);
   textAlign(CENTER, CENTER);
     if (gameEnded) {
-      if (numRemovedBubbles >= 5) {
+      if (numRemovedBubbles >= 10) {
         text("You won!", width / 2, height / 2);
       } 
       else {
@@ -77,41 +77,41 @@ function drawBubbles() {
   for (let i = 0; i < bubbles.length; i++) {
     image(bubbleImage, bubbles[i].x, bubbles[i].y, bubbleSize, bubbleSize);
   }
-  while (bubbles.length < 5) { // Voeg cirkels toe totdat we er 5 hebben
+  while (bubbles.length < 10) { // Voeg cirkels toe totdat we er 5 hebben
     let bubbleX = random(width - bubbleSize);
     let bubbleY = random(-height, -bubbleSize); // Start van boven
     bubbles.push({ x: bubbleX, y: bubbleY });
-    bubbleSpeeds.push(random(1, 3)); // Willekeurige snelheid tussen 1 en 3
+    bubbleSpeeds.push(random(2, 5)); // Willekeurige snelheid tussen 2 en 5
   }
 }
 
-// bewegen cirkels
-function moveBubbles() {
-  for (let i = 0; i < bubbles.length; i++) {
-    bubbles[i].y += bubbleSpeeds[i]; // Beweeg bubbel naar beneden
-    // Als de bubbel buiten het scherm gaat, plaats deze bovenaan opnieuw
-    if (bubbles[i].y > height + bubbleSize) {
-      bubbles[i].y = random(-height, -bubbleSize);
-      bubbles[i].x = random(width - bubbleSize);
-    }
-  }
-}
-
-function removeBubblesOnHand() {
-  for (let i = 0; i < predictions.length; i++) {
-    let landmarks = predictions[i].landmarks;
-    let handX = landmarks[8][0];
-    let handY = landmarks[8][1];
-    for (let j = bubbles.length - 1; j >= 0; j--) {
-      if (handX > bubbles[j].x && handX < bubbles[j].x + bubbleSize &&
-          handY > bubbles[j].y && handY < bubbles[j].y + bubbleSize) {
-        bubbles.splice(j, 1);
-        bubbleSpeeds.splice(j, 1);
-        numRemovedBubbles++;
+    // bewegen cirkels
+    function moveBubbles() {
+      for (let i = 0; i < bubbles.length; i++) {
+        bubbles[i].y += bubbleSpeeds[i]; // Beweeg bubbel naar beneden
+        // Als de bubbel buiten het scherm gaat, plaats deze bovenaan opnieuw
+        if (bubbles[i].y > height + bubbleSize) {
+          bubbles[i].y = random(-height, -bubbleSize);
+          bubbles[i].x = random(width - bubbleSize);
+        }
       }
     }
-  }
-}
+
+    function removeBubblesOnHand() {
+      for (let i = 0; i < predictions.length; i++) {
+        let landmarks = predictions[i].landmarks;
+        let handX = landmarks[8][0];
+        let handY = landmarks[8][1];
+        for (let j = bubbles.length - 1; j >= 0; j--) {
+          if (handX > bubbles[j].x && handX < bubbles[j].x + bubbleSize &&
+              handY > bubbles[j].y && handY < bubbles[j].y + bubbleSize) {
+            bubbles.splice(j, 1);
+            bubbleSpeeds.splice(j, 1);
+            numRemovedBubbles++;
+          }
+        }
+      }
+    }
 
 // tijd
 function displayTime(time) {
